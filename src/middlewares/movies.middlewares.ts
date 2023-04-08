@@ -1,8 +1,15 @@
 import { Request, Response, NextFunction } from 'express'
 import * as moviesRepository from "../repositories/movies.repository.js"
+import { MovieSchema } from '../schemas/movies.schema.js';
 
 const ensureNameMovieDoNotExists = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
     try {
+        const { error } = MovieSchema.validate(request.body);
+
+        if(error) {
+           return response.sendStatus(400);    
+        }
+
         const name: string = request.body.name;
         const queryResult = await moviesRepository.findMovieByName(name);
 
@@ -22,7 +29,12 @@ const ensureNameMovieDoNotExists = async (request: Request, response: Response, 
 };
 
 const ensureIdMovieExists = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
+    const { error } = MovieSchema.validate(request.body);
 
+    if(error) {
+        return response.sendStatus(400);    
+    }
+    
     const id: number = parseInt(request.params.id);
     const queryResult = await moviesRepository.getAnyMovieById(id);
 
